@@ -24,7 +24,13 @@ class UsuarioController {
     async index(req, res) {
         let filtro;        
         const response = await Usuario.find({ filtro });
-        return res.json(response);
+        return res.json(response.map((item) => ({ 
+            _id: item._id,
+            nome: item.nome,
+            email: item.email,
+            telefone: item.telefone,
+            nivel: item.nivel
+        })));
     }
 
     async create(req, res) {
@@ -49,7 +55,7 @@ class UsuarioController {
 
         const response = await Usuario.create(novoUsuario);
         return res.json({
-            id: response._id,
+            _id: response._id,
             nome: response.nome,
             email: response.email,
             telefone: response.telefone,
@@ -99,7 +105,7 @@ class UsuarioController {
 
         try {
             await Usuario.findByIdAndRemove(usuarioId);
-            return res.status(200).json({msg: "Usuario Excuido com sucesso"});
+            return res.status(200).json({msg: "Usuario excluído com sucesso"});
         } catch (error) {
             return res.status(400).json({
                 erro: `Não foi possivel remover usuario. ${error}`

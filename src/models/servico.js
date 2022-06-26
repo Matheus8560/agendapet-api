@@ -11,7 +11,10 @@ const servico = new Schema({
         type: Number,
         required: [true, 'Valor é obrigatório']
     },
-    duracao: Number,
+    duracao: {
+        type: Number,
+        required: [true, 'Duração é obrigatório']
+    },
 });
 
 module.exports = mongoose.model('Servico', servico);
