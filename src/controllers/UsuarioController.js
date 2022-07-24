@@ -22,8 +22,8 @@ class UsuarioController {
     }
 
     async index(req, res) {
-        let filtro;        
-        const response = await Usuario.find({ filtro });
+        const filtro = req.query;      
+        const response = await Usuario.find(filtro);
         return res.json(response.map((item) => ({ 
             _id: item._id,
             nome: item.nome,

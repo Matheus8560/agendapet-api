@@ -4,8 +4,8 @@ import * as Yup from 'yup';
 class ServicoController {
 
     async index(req, res) {
-        let filtro;        
-        const response = await Servico.find({ filtro });
+        const filtro = req.query;
+        const response = await Servico.find(filtro);
         return res.json(response);
     }
 

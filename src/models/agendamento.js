@@ -17,7 +17,7 @@ const agendamento = new Schema({
         type: Date,
         required: true
     },
-    hora: String,
+    hora: Array,
     valor: Number
 });
 
