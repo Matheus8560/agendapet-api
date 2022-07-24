@@ -1,5 +1,6 @@
 import Usuario from '../models/usuario';
 import * as Yup from 'yup';
+import bcrypt from 'bcrypt';
 
 class UsuarioController {
 
@@ -51,7 +52,12 @@ class UsuarioController {
             return res.status(400).json({erro: 'Email já está cadastrado no sistema.'});
         };
 
-        const novoUsuario = { ...campos, senha: senhaUsuario }
+        const senhaHash = campos.senha ? await bcrypt.hash(campos.senha, 12) : await bcrypt.hash(senhaUsuario, 12);
+
+        const novoUsuario = { 
+            ...campos,
+            senha: senhaHash 
+        };
 
         const response = await Usuario.create(novoUsuario);
         return res.json({

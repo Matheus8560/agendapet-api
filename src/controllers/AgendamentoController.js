@@ -16,7 +16,7 @@ class AgendamentoController {
 
     async available(req, res) {
         const filtro = req.query;
-        const espacos =  2 //filtro.espacos ? filtro.espacos : 1
+        const espacos = filtro.espacos ? filtro.espacos : 1;
         const dias = await Horario.find(filtro).sort('dia');
         const agendamentos = await Agendamento.find({ data: { $gte: new Date(moment().format('YYYY-MM-DD')) } });
         let agenda = [];
