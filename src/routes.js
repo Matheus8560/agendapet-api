@@ -12,6 +12,7 @@ const routes = new Router();
 
 //rotas de altenticação e recuperação de senha
 routes.post('/session', SessionController.create);
+routes.get('/session/refresh', authMiddleware, SessionController.refresh);
 
 //rotas de usuários 
 //(Obs: A autenticação na criação do usuário está comentada para criação do primeiro usuario, descomente após cria-lo.)

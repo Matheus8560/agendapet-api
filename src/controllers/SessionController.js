@@ -42,6 +42,25 @@ class SessionController {
             }),
         });
     }
+
+    async refresh(req, res) {
+        const uid = req.id
+
+        const usuario = await Usuario.findOne({_id: uid});
+        if (!usuario) {
+            return res.status(401).json({ erro: 'Usuário não encontrado.' });
+        };
+
+        return res.json({
+            token: jwt.sign({
+                id: usuario._id,
+                email: usuario.email,
+                nivel: usuario.nivel,
+            }, process.env.SECRET, {
+                expiresIn: '7d',
+            }),
+        });
+    }
     
 }
 
