@@ -1,27 +1,10 @@
 import Usuario from '../models/usuario';
+import Agendamento from '../models/agendamento';
 import * as Yup from 'yup';
 import bcrypt from 'bcrypt';
+import Utils from '../Utils';
 
 class UsuarioController {
-
-    static geraSenha(tamanho){
-        let i = 0;
-        let ma = 'ABCDEFGHIJKLMNOPQRSTUVYXWZ';
-        let mi = 'abcdefghijklmnopqrstuvyxwz';
-        let nu = '0123456789';
-        let senha = '';
-
-        do {
-            senha += ma.charAt(Math.floor(Math.random() * ma.length));
-            i += 1;
-            senha += mi.charAt(Math.floor(Math.random() * mi.length));
-            i += 1;
-            senha += nu.charAt(Math.floor(Math.random() * nu.length));
-            i += 1;
-        } while (i < tamanho);
-        return senha;
-    }
-
     async index(req, res) {
         const filtro = req.query;      
         const response = await Usuario.find(filtro);
@@ -36,7 +19,7 @@ class UsuarioController {
 
     async create(req, res) {
         const campos = req.body;
-        const senhaUsuario = UsuarioController.geraSenha(6);
+        const senhaUsuario = Utils.geraSenha(6);
         const schema = Yup.object().shape({
             nome: Yup.string().required(),
             email: Yup.string().email().required(),
@@ -44,7 +27,7 @@ class UsuarioController {
 
         });
         if (!(await schema.isValid(campos))){
-            return res.status(400).json({erro: 'Falha na validação.'});
+            return res.status(400).json({erro: 'Falha na validação. Verifique os dados.'});
         };
 
         const usuario = await Usuario.findOne({email: campos.email});
@@ -58,6 +41,17 @@ class UsuarioController {
             ...campos,
             senha: senhaHash 
         };
+
+        if (!campos.senha) {
+            const emailOptions = {
+                from: "noreplay@agendapet.com",
+                to: campos.email,
+                subject: "Bem-vindo a Agenda Pet",
+                text: `Sua senha de acesso é: ${senhaUsuario}`
+            };
+            
+            await Utils.enviaEmail(emailOptions);
+        }
 
         const response = await Usuario.create(novoUsuario);
         return res.json({
@@ -75,12 +69,13 @@ class UsuarioController {
         const schema = Yup.object().shape({
             nome: Yup.string().required(),
             email: Yup.string().email().required(),
-            telefone: Yup.string(),
+            telefone: Yup.string().required(),
+            senha: Yup.string(),
             usuarioId: Yup.string().required(),
 
         });
         if (!(await schema.isValid({ ...campos, usuarioId }))){
-            return res.status(400).json({erro: 'Falha na validação.'});
+            return res.status(400).json({erro: 'Falha na validação. Verifique os dados.'});
         };
 
         const usuario = await Usuario.findOne({ email: campos.email });
@@ -88,18 +83,44 @@ class UsuarioController {
             return res.status(400).json({erro: 'Email já está cadastrado no sistema.'});
         };
 
-        const response = await Usuario.findOneAndUpdate(
-            { _id : usuarioId },
-            campos,
-            { new: true }
-        );
+        if (campos.senha) {
+            const senhaHash = await bcrypt.hash(campos.senha, 12);
+            const response = await Usuario.findOneAndUpdate(
+                { _id : usuarioId },
+                {
+                    nome: campos.nome,
+                    email: campos.email,
+                    telefone: campos.telefone,
+                    senha: senhaHash,
+                },
+                { new: true }
+            );
+    
+            return res.json({
+                id: response.usuarioId,
+                nome: response.nome,
+                email: response.email,
+                telefone: response.telefone,
+            });
+        } else {
+            const response = await Usuario.findOneAndUpdate(
+                { _id : usuarioId },
+                {
+                    nome: campos.nome,
+                    email: campos.email,
+                    telefone: campos.telefone,
+                },
+                { new: true }
+            );
+    
+            return res.json({
+                id: response.usuarioId,
+                nome: response.nome,
+                email: response.email,
+                telefone: response.telefone,
+            });
+        }
 
-        return res.json({
-            id: response.usuarioId,
-            nome: response.nome,
-            email: response.email,
-            telefone: response.telefone,
-        });
     }
 
     async destroy(req, res) {
@@ -109,12 +130,22 @@ class UsuarioController {
             return res.status(400).json({erro: 'Usuario não informado.'});
         };
 
+        const agendamento = await Agendamento.find({ clienteId: usuarioId})
+        if (agendamento.length>0) {
+            try {
+                await Agendamento.remove({clienteId: usuarioId})
+            } catch (error) {
+                console.log(error);    
+            }
+        
+        }
+
         try {
             await Usuario.findByIdAndRemove(usuarioId);
             return res.status(200).json({msg: "Usuario excluído com sucesso"});
         } catch (error) {
             return res.status(400).json({
-                erro: `Não foi possivel remover usuario. ${error}`
+                erro: `Não foi possivel remover usuario.`
             });
         }
     }  

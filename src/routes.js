@@ -12,6 +12,7 @@ const routes = new Router();
 
 //rotas de altenticação e recuperação de senha
 routes.post('/session', SessionController.create);
+routes.post('/recovery', SessionController.recovery);
 routes.get('/session/refresh', authMiddleware, SessionController.refresh);
 
 //rotas de usuários 
@@ -37,6 +38,6 @@ routes.delete('/horario', authMiddleware, HorarioController.destroy);
 routes.get('/agendamento', authMiddleware, AgendamentoController.index);
 routes.get('/horarios-disponiveis', authMiddleware, AgendamentoController.available);
 routes.post('/agendamento', authMiddleware, AgendamentoController.create);
-routes.delete('/agendamento', authMiddleware, AgendamentoController.destroy);
+routes.delete('/agendamento/:agendamentoId', authMiddleware, AgendamentoController.destroy);
 
 export default routes;

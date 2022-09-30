@@ -14,6 +14,11 @@ const horario = new Schema({
         type: Number,
         required: true
     },
+    ativo: {
+        type: Boolean,
+        required: true,
+        default: false
+    },
 });
 
 module.exports = mongoose.model('Horario', horario);

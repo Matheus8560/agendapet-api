@@ -14,7 +14,10 @@ const usuario = new Schema({
         type: String,
         required: [true, 'Senha é obrigatório']
     },
-    telefone: String,
+    telefone: {
+        type: String,
+        required: [true, 'Senha é obrigatório']
+    },
     nivel: {
         type: String,
         default: '2'

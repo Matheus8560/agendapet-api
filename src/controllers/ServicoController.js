@@ -1,5 +1,6 @@
 import Servico from '../models/servico';
 import * as Yup from 'yup';
+import Agendamento from '../models/agendamento';
 
 class ServicoController {
 
@@ -55,9 +56,18 @@ class ServicoController {
             return res.status(400).json({erro: 'Serviço não informado.'});
         };
 
+        const agendamento = await Agendamento.find({servicoId: servicoId})
+        if (agendamento.length>0) {
+            try {
+                await Agendamento.remove({servicoId: servicoId})
+            } catch (error) {
+                console.log(error);    
+            }
+        }
+
         try {
             await Servico.findByIdAndRemove(servicoId);
-            return res.status(200).json({msg: "Serviço excluído com sucesso"});
+            return res.status(200).json({msg: "Serviço excluído com sucesso!"});
         } catch (error) {
             return res.status(400).json({
                 erro: `Não foi possivel remover serviço. ${error}`

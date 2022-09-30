@@ -1,8 +1,10 @@
 import Usuario from '../models/usuario';
 
 import * as Yup from 'yup';
-import bcryt from 'bcrypt';
+import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
+
+import Utils from '../Utils'
 class SessionController {
 
     async create(req, res) {
@@ -20,7 +22,7 @@ class SessionController {
             return res.status(401).json({ erro: 'Usuário não encontrado.' });
         };
 
-        if (!(await bcryt.compare(campos.senha, usuario.senha))){
+        if (!(await bcrypt.compare(campos.senha, usuario.senha))){
             return res.status(401).json({ erro: 'Senha incorreta.' });
         }
 
@@ -40,6 +42,43 @@ class SessionController {
             }, process.env.SECRET, {
                 expiresIn: '7d',
             }),
+        });
+    }
+
+    async recovery(req, res) {
+        const campos = req.body;
+        const schema = Yup.object().shape({
+            email: Yup.string().email().required(),
+        });
+        if (!(await schema.isValid(campos))){
+            return res.status(401).json({ erro: 'E-mail informado não é válido.'} );
+        };
+
+        const usuario = await Usuario.findOne({email: campos.email});
+        if (!usuario) {
+            return res.status(401).json({ erro: 'Usuário não encontrado.' });
+        };
+
+        const novaSenha = Utils.geraSenha(6);
+        const senhaHash = await bcrypt.hash(novaSenha, 12);
+
+        if (await Usuario.findByIdAndUpdate( usuario._id,{ senha: senhaHash })) {
+            const emailOptions = {
+                from: "noreplay@agendapet.com",
+                to: campos.email,
+                subject: "Recuperação de senha Agenda Pet",
+                text: `Sua nova senha é: ${novaSenha}`
+            };
+            
+            await Utils.enviaEmail(emailOptions);
+
+            return res.json({
+                successo: `Uma nova senha foi enviada para seu email: ${campos.email}`
+            });
+        }
+
+        return res.status(400).json({
+            erro: "Erro ao tentar recuperar conta"
         });
     }
 

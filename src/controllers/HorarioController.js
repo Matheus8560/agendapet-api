@@ -13,6 +13,7 @@ class HorarioController {
             dia: item.dia,
             inicio: item.inicio,
             fim: item.fim,
+            ativo: item.ativo,
             horaInicio: Utils.coverteHora(item.inicio),
             horaFim: Utils.coverteHora(item.fim)
         })));
@@ -22,8 +23,8 @@ class HorarioController {
         const campos = req.body;
         const schema = Yup.object().shape({
             dia: Yup.number().moreThan(-1).lessThan(7).required(),
-            inicio: Yup.number().moreThan(-1).lessThan(49).required(),
-            fim: Yup.number().moreThan(-1).lessThan(49).required()
+            inicio: Yup.number().moreThan(-1).lessThan(48).required(),
+            fim: Yup.number().moreThan(-1).lessThan(48).required()
         });
         if (!(await schema.isValid(campos))){
             return res.status(400).json({erro: 'Falha na validação.'});
@@ -55,9 +56,9 @@ class HorarioController {
         const campos = req.body;
         const { horarioId } = req.params;
         const schema = Yup.object().shape({
-            dia: Yup.number().moreThan(-1).lessThan(7).required(),
             inicio: Yup.number().moreThan(-1).lessThan(49).required(),
-            fim: Yup.number().moreThan(-1).lessThan(49).required()
+            fim: Yup.number().moreThan(-1).lessThan(49).required(),
+            ativo: Yup.boolean().required()
         });
         if (!(await schema.isValid({ ...campos, horarioId }))){
             return res.status(400).json({erro: 'Falha na validação.'});
@@ -78,6 +79,7 @@ class HorarioController {
             dia: response.dia,
             inicio: response.inicio,
             fim: response.fim,
+            ativo: response.ativo,
             horaInicio: Utils.coverteHora(response.inicio),
             horaFim: Utils.coverteHora(response.fim)
         });
