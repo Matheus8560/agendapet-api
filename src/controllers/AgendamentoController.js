@@ -29,7 +29,7 @@ class AgendamentoController {
                     let diaDisponivel = moment().day(item.dia).add((7*i),'days');
                     let inicio = item.inicio;
                     let fim = item.fim;
-                    if (moment(diaDisponivel).isAfter(moment().format('YYYY-MM-DD'))) {
+                    if (moment(diaDisponivel).isAfter(moment())) {
                         do {
                             horas.push(inicio);
                             inicio++;
@@ -54,7 +54,7 @@ class AgendamentoController {
                             horarios: horas.filter(item=>item != null),
                         }
                         
-                        if (dia.horarios.length > 0) {
+                        if (dia.horarios.length > 0 ) {
                             agenda.push(dia);
                         }
                     }
